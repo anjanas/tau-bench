@@ -44,9 +44,20 @@ class LLMUserSimulationEnv(BaseUserSimulationEnv):
         self.reset()
 
     def generate_next_message(self, messages: List[Dict[str, Any]]) -> str:
-        res = completion(
-            model=self.model, custom_llm_provider=self.provider, messages=messages
-        )
+        # Handle Nebius provider (OpenAI-compatible API)
+        if self.provider == "nebius":
+            import os
+            res = completion(
+                model=self.model,
+                custom_llm_provider="openai",
+                api_base="https://api.studio.nebius.com/v1",
+                api_key=os.getenv("NEBIUS_API_KEY"),
+                messages=messages,
+            )
+        else:
+            res = completion(
+                model=self.model, custom_llm_provider=self.provider, messages=messages
+            )
         message = res.choices[0].message
         self.messages.append(message.model_dump())
         self.total_cost = res._hidden_params["response_cost"]
@@ -115,9 +126,20 @@ User Response:
 <the user response (this will be parsed and sent to the agent)>"""
 
     def generate_next_message(self, messages: List[Dict[str, Any]]) -> str:
-        res = completion(
-            model=self.model, custom_llm_provider=self.provider, messages=messages
-        )
+        # Handle Nebius provider (OpenAI-compatible API)
+        if self.provider == "nebius":
+            import os
+            res = completion(
+                model=self.model,
+                custom_llm_provider="openai",
+                api_base="https://api.studio.nebius.com/v1",
+                api_key=os.getenv("NEBIUS_API_KEY"),
+                messages=messages,
+            )
+        else:
+            res = completion(
+                model=self.model, custom_llm_provider=self.provider, messages=messages
+            )
         message = res.choices[0].message
         self.messages.append(message.model_dump())
         self.total_cost = res._hidden_params["response_cost"]
@@ -164,9 +186,20 @@ class VerifyUserSimulationEnv(LLMUserSimulationEnv):
         attempts = 0
         cur_message = None
         while attempts < self.max_attempts:
-            res = completion(
-                model=self.model, custom_llm_provider=self.provider, messages=messages
-            )
+            # Handle Nebius provider (OpenAI-compatible API)
+            if self.provider == "nebius":
+                import os
+                res = completion(
+                    model=self.model,
+                    custom_llm_provider="openai",
+                    api_base="https://api.studio.nebius.com/v1",
+                    api_key=os.getenv("NEBIUS_API_KEY"),
+                    messages=messages,
+                )
+            else:
+                res = completion(
+                    model=self.model, custom_llm_provider=self.provider, messages=messages
+                )
             cur_message = res.choices[0].message
             self.total_cost = res._hidden_params["response_cost"]
             if verify(self.model, self.provider, cur_message, messages):
@@ -224,11 +257,22 @@ Your answer will be parsed, so do not include any other text than the classifica
 -----
 
 Classification:"""
-    res = completion(
-        model=model,
-        custom_llm_provider=provider,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    # Handle Nebius provider (OpenAI-compatible API)
+    if provider == "nebius":
+        import os
+        res = completion(
+            model=model,
+            custom_llm_provider="openai",
+            api_base="https://api.studio.nebius.com/v1",
+            api_key=os.getenv("NEBIUS_API_KEY"),
+            messages=[{"role": "user", "content": prompt}],
+        )
+    else:
+        res = completion(
+            model=model,
+            custom_llm_provider=provider,
+            messages=[{"role": "user", "content": prompt}],
+        )
     return "true" in res.choices[0].message.content.lower()
 
 
@@ -258,11 +302,22 @@ Reflection:
 
 Response:
 <the response (this will be parsed and sent to the agent)>"""
-    res = completion(
-        model=model,
-        custom_llm_provider=provider,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    # Handle Nebius provider (OpenAI-compatible API)
+    if provider == "nebius":
+        import os
+        res = completion(
+            model=model,
+            custom_llm_provider="openai",
+            api_base="https://api.studio.nebius.com/v1",
+            api_key=os.getenv("NEBIUS_API_KEY"),
+            messages=[{"role": "user", "content": prompt}],
+        )
+    else:
+        res = completion(
+            model=model,
+            custom_llm_provider=provider,
+            messages=[{"role": "user", "content": prompt}],
+        )
     _, response = res.choices[0].message.content.split("Response:")
     return response.strip()
 

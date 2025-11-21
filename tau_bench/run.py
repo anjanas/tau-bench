@@ -19,15 +19,24 @@ from tau_bench.envs.user import UserStrategy
 
 def run(config: RunConfig) -> List[EnvRunResult]:
     assert config.env in ["retail", "airline"], "Only retail and airline envs are supported"
-    assert config.model_provider in provider_list, "Invalid model provider"
-    assert config.user_model_provider in provider_list, "Invalid user model provider"
+    # Allow nebius as a custom provider (OpenAI-compatible)
+    allowed_providers = list(provider_list) + ["nebius"]
+    assert config.model_provider in allowed_providers, "Invalid model provider"
+    assert config.user_model_provider in allowed_providers, "Invalid user model provider"
     assert config.agent_strategy in ["tool-calling", "act", "react", "few-shot"], "Invalid agent strategy"
     assert config.task_split in ["train", "test", "dev"], "Invalid task split"
     assert config.user_strategy in [item.value for item in UserStrategy], "Invalid user strategy"
 
     random.seed(config.seed)
     time_str = datetime.now().strftime("%m%d%H%M%S")
-    ckpt_path = f"{config.log_dir}/{config.agent_strategy}-{config.model.split('/')[-1]}-{config.temperature}_range_{config.start_index}-{config.end_index}_user-{config.user_model}-{config.user_strategy}_{time_str}.json"
+    # Sanitize model names for file paths (replace / and other problematic chars)
+    def sanitize_model_name(model_name: str) -> str:
+        """Replace problematic characters in model names for file paths."""
+        return model_name.replace("/", "-").replace("\\", "-").replace(":", "-")
+    
+    agent_model_safe = sanitize_model_name(config.model.split('/')[-1])
+    user_model_safe = sanitize_model_name(config.user_model)
+    ckpt_path = f"{config.log_dir}/{config.agent_strategy}-{agent_model_safe}-{config.temperature}_range_{config.start_index}-{config.end_index}_user-{user_model_safe}-{config.user_strategy}_{time_str}.json"
     if not os.path.exists(config.log_dir):
         os.makedirs(config.log_dir)
 
@@ -101,6 +110,11 @@ def run(config: RunConfig) -> List[EnvRunResult]:
             )
             print("-----")
             with lock:
+                # Ensure the directory exists
+                ckpt_dir = os.path.dirname(ckpt_path)
+                if ckpt_dir and not os.path.exists(ckpt_dir):
+                    os.makedirs(ckpt_dir, exist_ok=True)
+                
                 data = []
                 if os.path.exists(ckpt_path):
                     with open(ckpt_path, "r") as f:
@@ -115,6 +129,11 @@ def run(config: RunConfig) -> List[EnvRunResult]:
 
     display_metrics(results)
 
+    # Ensure the directory exists
+    ckpt_dir = os.path.dirname(ckpt_path)
+    if ckpt_dir and not os.path.exists(ckpt_dir):
+        os.makedirs(ckpt_dir, exist_ok=True)
+    
     with open(ckpt_path, "w") as f:
         json.dump([result.model_dump() for result in results], f, indent=2)
         print(f"\n📄 Results saved to {ckpt_path}\n")

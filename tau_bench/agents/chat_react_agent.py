@@ -37,12 +37,24 @@ class ChatReActAgent(Agent):
     def generate_next_step(
         self, messages: List[Dict[str, Any]]
     ) -> Tuple[Dict[str, Any], Action, float]:
-        res = completion(
-            model=self.model,
-            custom_llm_provider=self.provider,
-            messages=messages,
-            temperature=self.temperature,
-        )
+        # Handle Nebius provider (OpenAI-compatible API)
+        if self.provider == "nebius":
+            import os
+            res = completion(
+                model=self.model,
+                custom_llm_provider="openai",
+                api_base="https://api.studio.nebius.com/v1",
+                api_key=os.getenv("NEBIUS_API_KEY"),
+                messages=messages,
+                temperature=self.temperature,
+            )
+        else:
+            res = completion(
+                model=self.model,
+                custom_llm_provider=self.provider,
+                messages=messages,
+                temperature=self.temperature,
+            )
         message = res.choices[0].message
         action_str = message.content.split("Action:")[-1].strip()
         try:

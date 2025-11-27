@@ -150,6 +150,7 @@ class Env(object):
                 for action in self.actions:
                     if (
                         action.name == RESPOND_ACTION_NAME
+                        and action.kwargs.get("content") is not None
                         and output.lower()
                         in action.kwargs["content"].lower().replace(",", "")
                     ):

@@ -47,11 +47,14 @@ class LLMUserSimulationEnv(BaseUserSimulationEnv):
         # Handle Nebius provider (OpenAI-compatible API)
         if self.provider == "nebius":
             import os
+            api_key = os.getenv("NEBIUS_API_KEY")
+            if not api_key:
+                raise ValueError("NEBIUS_API_KEY environment variable is not set")
             res = completion(
                 model=self.model,
                 custom_llm_provider="openai",
                 api_base="https://api.studio.nebius.com/v1",
-                api_key=os.getenv("NEBIUS_API_KEY"),
+                api_key=api_key,
                 messages=messages,
             )
         else:
@@ -129,11 +132,14 @@ User Response:
         # Handle Nebius provider (OpenAI-compatible API)
         if self.provider == "nebius":
             import os
+            api_key = os.getenv("NEBIUS_API_KEY")
+            if not api_key:
+                raise ValueError("NEBIUS_API_KEY environment variable is not set")
             res = completion(
                 model=self.model,
                 custom_llm_provider="openai",
                 api_base="https://api.studio.nebius.com/v1",
-                api_key=os.getenv("NEBIUS_API_KEY"),
+                api_key=api_key,
                 messages=messages,
             )
         else:
@@ -189,11 +195,14 @@ class VerifyUserSimulationEnv(LLMUserSimulationEnv):
             # Handle Nebius provider (OpenAI-compatible API)
             if self.provider == "nebius":
                 import os
+                api_key = os.getenv("NEBIUS_API_KEY")
+                if not api_key:
+                    raise ValueError("NEBIUS_API_KEY environment variable is not set")
                 res = completion(
                     model=self.model,
                     custom_llm_provider="openai",
                     api_base="https://api.studio.nebius.com/v1",
-                    api_key=os.getenv("NEBIUS_API_KEY"),
+                    api_key=api_key,
                     messages=messages,
                 )
             else:
@@ -260,11 +269,14 @@ Classification:"""
     # Handle Nebius provider (OpenAI-compatible API)
     if provider == "nebius":
         import os
+        api_key = os.getenv("NEBIUS_API_KEY")
+        if not api_key:
+            raise ValueError("NEBIUS_API_KEY environment variable is not set")
         res = completion(
             model=model,
             custom_llm_provider="openai",
             api_base="https://api.studio.nebius.com/v1",
-            api_key=os.getenv("NEBIUS_API_KEY"),
+            api_key=api_key,
             messages=[{"role": "user", "content": prompt}],
         )
     else:
@@ -305,11 +317,14 @@ Response:
     # Handle Nebius provider (OpenAI-compatible API)
     if provider == "nebius":
         import os
+        api_key = os.getenv("NEBIUS_API_KEY")
+        if not api_key:
+            raise ValueError("NEBIUS_API_KEY environment variable is not set")
         res = completion(
             model=model,
             custom_llm_provider="openai",
             api_base="https://api.studio.nebius.com/v1",
-            api_key=os.getenv("NEBIUS_API_KEY"),
+            api_key=api_key,
             messages=[{"role": "user", "content": prompt}],
         )
     else:

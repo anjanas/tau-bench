@@ -50,12 +50,15 @@ class FewShotToolCallingAgent(Agent):
             # Handle Nebius provider (OpenAI-compatible API)
             if self.provider == "nebius":
                 import os
+                api_key = os.getenv("NEBIUS_API_KEY")
+                if not api_key:
+                    raise ValueError("NEBIUS_API_KEY environment variable is not set")
                 res = completion(
                     messages=messages,
                     model=self.model,
                     custom_llm_provider="openai",
                     api_base="https://api.studio.nebius.com/v1",
-                    api_key=os.getenv("NEBIUS_API_KEY"),
+                    api_key=api_key,
                     tools=self.tools_info,
                     temperature=self.temperature,
                 )
